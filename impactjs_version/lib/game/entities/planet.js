@@ -30,6 +30,8 @@ ig.module(
 		regen:0.05,
 		
 		highlight:0,
+    // lines: [],
+    profile: 0,
 		
 		type: ig.Entity.TYPE.A,
 		checkAgainst: ig.Entity.TYPE.NONE,
@@ -107,6 +109,7 @@ ig.module(
 			        									this.pos.y, 
 			        									{flip:this.flip, angle:0.0, par:this} 
 			        									); //Nothing to special here, just make sure you pass the angle we calculated in
+              
 					this.highlight.zIndex=this.zIndex+2;
 				}
 		    }else{
@@ -241,7 +244,81 @@ ig.module(
 		
 	});   //end of bullet
 
-});
+	EntityLine = ig.Entity.extend({
+        start: {},
+        finish: {},
+ 
+        init: function(x, y, settings) {
+          this.parent(x,y,settings);
+
+          this.target.x = settings.target.x ;
+          this.target.y = settings.target.y ;
+
+        },
+ 
+        update: function() {
+          
+
+
+          this.parent();
+        },
+
+        draw: function() {
+          var guideColor = "rgb(196,0,245)";
+          var guideRadius = 10;
+
+          var offset = 18;
+        	var startX = ig.system.getDrawPos(this.pos.x - ig.game.screen.x + offset);
+          var startY = ig.system.getDrawPos(this.pos.y - ig.game.screen.y + offset);
+                
+          var endX = ig.system.getDrawPos(this.target.x-ig.game.screen.x + offset);
+          var endY = ig.system.getDrawPos(this.target.y-ig.game.screen.y + offset);
+
+          var ctx = ig.system.context;
+                
+          ctx.strokeStyle = guideColor; //
+          ctx.lineWidth = 7.5;
+          ctx.beginPath();
+          ctx.moveTo(startX,startY);
+          ctx.lineTo(endX,endY);
+          ctx.stroke();
+          ctx.closePath();
+          
+
+          
+          ctx.beginPath();
+          // ctx.strokeStyle = guideColor;  //some color
+          ctx.fillStyle = guideColor;
+          ctx.arc( startX,
+                  startY,
+                  guideRadius * ig.system.scale,
+                  0, 
+                  Math.PI * 2 );
+          ctx.arc( endX,
+                  endY,
+                  guideRadius * ig.system.scale,
+                  0, 
+                  Math.PI * 2 );
+          // ctx.stroke();
+          ctx.fill();
+
+
+          ctx.closePath();
+
+
+        }
+    });
+
+
+
+
+
+
+
+
+
+
+}); //end of planet.js
 
 
 

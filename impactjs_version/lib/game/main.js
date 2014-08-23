@@ -7,6 +7,7 @@ ig.module(
 	'impact.font',
 	'impact.timer',
 	'game.levels.hom1',
+  'game.planet-profiles',
 	//'game.levels.dorm1'
 	
 	'impact.debug.debug' // <- Add this
@@ -16,13 +17,22 @@ ig.module(
 	MyGame = ig.Game.extend({
 	
 		font: new ig.Font( 'media/04b03.font.png' ),
-		//outputMsg: 'It works!',
+		outputMsg: 'It works!',
 		statText: new ig.Font( 'media/04b03.font.png' ),
 		showStats: false,
 		statMatte: new ig.Image('media/stat-matte.png'),
 		levelTimer: new ig.Timer(),
 		levelExit: null,
-		stats: {time: 0, kills: 0, deaths: 0},
+
+		stats: { fuel: 0,
+              crew: 0,
+              hull: 0,
+              filler: 0,
+              crystal: 0,
+              time: 0, 
+              kills: 0, 
+              deaths: 0
+              },
 		
 		lives: 1,
 		
@@ -30,6 +40,10 @@ ig.module(
 
 		highlighted:0,
 		lastHL:0,
+		lines: [],
+
+    allPlanetProfiles: {},
+    lengthPlanetProfiles: 0,
 
 		mapAccel:2.1,
 		
@@ -37,6 +51,12 @@ ig.module(
 		// Initialize your game here; bind keys etc.
 			//this.loadLevel( LevelDorm1 );
 			this.loadLevel( LevelHom1 );
+
+      this.stats.fuel = 300;
+      this.stats.crew = 100;
+      this.stats.hull = 100;
+      this.stats.crystal = 0.0;
+
 			
 			// Bind keys
 			ig.input.bind( ig.KEY.LEFT_ARROW, 'left' );
@@ -57,6 +77,28 @@ ig.module(
 			// spawn planet entities
 			ig.game.spawnEntity( EntityPlanet, 100, 100 );
 
+      // var xobj = new XMLHttpRequest();
+      // xobj.overrideMimeType("application/json");
+      // xobj.open('GET', 'lib/game/planet-profiles.json', true);
+      // xobj.onreadystatechange = function () {
+      //     if (xobj.readyState == 4) {
+      //         this.allPlanetProfiles = xobj.responseText
+      //         // this.lengthPlanetProfiles = this.allPlanetProfiles.profiles.length
+      //         // var jsonTexto = xobj.responseText;
+      //         // ProcessTheData(jsonTexto);
+      //     }
+      // }
+      // xobj.send(null);
+
+      // this.allPlanetProfiles = jsonTexto;
+      // this.lengthPlanetProfiles = Object.keys(this.allPlanetProfiles.profiles).length
+      // this.lengthPlanetProfiles = this.allPlanetProfiles.profiles[0].name
+
+      this.allPlanetProfiles = planetProfilesJSON;
+      // jQuery.getJSON("planet-profiles.json", function(json) {
+      //   console.log(json); // this will show the info it in firebug console
+      // });
+
 		},
 		
 		update: function(){
@@ -69,8 +111,24 @@ ig.module(
 			// 	player = ig.game.highlighted;
 			// }
 			if(ig.game.highlighted != ig.game.lastHL){
+				// this.outputMsg = 0;
+
+				if (this.highlighted != 0 && this.lastHL != 0){
+					this.lines.push(ig.game.spawnEntity( EntityLine ,
+	                                ig.game.highlighted.pos.x,
+	                                ig.game.highlighted.pos.y,
+	                                {target:
+	                                  {x:ig.game.lastHL.pos.x,
+	                                    y:ig.game.lastHL.pos.y}
+	                                  }
+	                                  ));
+          this.loadProfile();
+				}
+
 				ig.game.lastHL = ig.game.highlighted ;
 				player = ig.game.highlighted;
+        
+
 			}else{
 				player = 0;
 			}
@@ -103,16 +161,19 @@ ig.module(
 			
 			var x =ig.system.width/2;
 			var y = ig.system.height/2;
-			var outputMsg='It Works!';
-			//this.font.draw(outputMsg,x,y,ig.Font.ALIGN.CENTER );
 			
-			if(this.instructText){
-				var x = ig.system.width/2,
-				y = ig.system.height - 10;
-				this.instructText.draw( 
-					'Click a planet to Connect via Telecaster!', 
-					x, y, ig.Font.ALIGN.CENTER );
-			}
+      if(this.outputMsg != 0){
+        this.outputMsg='Click a planet to Connect via Telecaster!';
+        // this.font.draw(this.outputMsg,x,y,ig.Font.ALIGN.CENTER );
+      }
+			
+			// if(this.instructText){
+			// 	var x = ig.system.width/2,
+			// 	y = ig.system.height - 100;
+			// 	this.instructText.draw( 
+			// 		'Click a planet to Connect via Telecaster!', 
+			// 		x, y, ig.Font.ALIGN.CENTER );
+			// }
 			
 			if(this.showStats){
 				this.statMatte.draw(0,0);
@@ -146,7 +207,28 @@ ig.module(
 			ig.system.setGame(GameOverScreen);
 		},
 	
-		
+		loadProfile: function(){
+      // console.log(this.allPlanetProfiles.profiles.length);
+      
+      if (this.highlighted.profile == 0){
+        var items = ig.game.allPlanetProfiles.profiles;
+        var index = Math.floor(Math.random()*items.length);
+        console.log(index);
+        var item = items[index];
+        this.highlighted.profile = item;
+        this.outputMsg = item.text;
+        this.stats.crew += item.crew;
+        this.stats.hull += item.hull;
+        
+
+        this.stats.crystal += item.crystal;
+      }
+
+        this.stats.fuel += this.highlighted.profile.fuel;
+
+    },
+
+
 		
 	});
 	
@@ -232,8 +314,8 @@ ig.module(
 		game_y =468;
 		game_z =4;
 	}else{
-		game_x =312;
-		game_y =468;
+		game_x =400; //
+		game_y =320;
 		game_z =2;
 	}
 	
@@ -247,7 +329,38 @@ ig.module(
 	//ig.main('#canvas',MyGame,60,624,936,2);
 	//ig.main('#canvas',MyGame,60,1248,1872,0.5);
 
-});
+
+  var planetProfilesJSON = {"profiles":
+    [
+      {"name":"mean",
+        "text":"Evil monsters attacked!",
+        "fuel":-30,
+        "crew":-30,
+        "hull":-30,
+        "crystal":0
+        },
+      {"name":"good",
+        "text":"Cool stuff was lying around.",
+        "fuel":10,
+        "crew":10,
+        "hull":10,
+        "crystal":10
+        },
+      {"name":"great",
+        "text":"Super friendly and advanced aliens hook it up with goodies!",
+        "fuel":30,
+        "crew":30,
+        "hull":30,
+        "crystal":20
+        }
+
+
+    ]
+
+
+  };
+
+}); //end of the whole game
 
 
 
