@@ -7,7 +7,8 @@ ig.module(
 )
 .defines(function(){
 	EntityPlanet = ig.Entity.extend({
-		animSheet: new ig.AnimationSheet( 'media/planet_base.png', 48, 48 ),
+    zIndex:100, //
+		animSheet: new ig.AnimationSheet( 'media/planet_new_tileset.png', 48, 48 ),
 
 		size: {x: 34, y:38},
 		offset: {x: 6, y: 6},
@@ -32,6 +33,7 @@ ig.module(
 		highlight:0,
     // lines: [],
     profile: 0,
+    planetColor: [25,45,65],
 		
 		type: ig.Entity.TYPE.A,
 		checkAgainst: ig.Entity.TYPE.NONE,
@@ -60,10 +62,9 @@ ig.module(
 			//this.setupAnimation(this.weapon);
 			this.startPosition = {x:x,y:y};
 			// this.invincibleTimer = new ig.Timer();
-			// this.makeInvincible();
 			
 			this.parent( x, y, settings );
-			this.addAnim( 'idle', 1, [0] );
+			this.addAnim( 'idle', 1, [Math.floor(1+Math.random()*2)-1 ] );
 			this.addAnim( 'run', this.animSpeed, [1,2,3,4] );
 			this.addAnim( 'jump', 1, [6] );
 			this.addAnim( 'fall', 1, [0] );
@@ -83,7 +84,10 @@ ig.module(
 			var down = 24;
 			this.addAnim( 'run_down', this.animSpeed, [1+down,2+down,3+down,4+down] );
 			
-			
+			this.planetColor = [Math.floor(20+Math.random()*230),
+        Math.floor(20+Math.random()*230),
+        Math.floor(20+Math.random()*230)
+              ];
 
 		},
 		
@@ -98,7 +102,7 @@ ig.module(
 
 		update: function() {
 			//creates turret
-
+      this.currentAnim = this.anims.idle;
 			if (ig.input.pressed('lbtn') && this.inFocus()) {
 		        ig.log('clicked');
 		        // this.highlight = 
@@ -130,7 +134,30 @@ ig.module(
 		
 		
 		draw: function(){
-			
+      var r=this.planetColor[0],g=this.planetColor[1],b=this.planetColor[2];
+      // console.log(r);
+			var planetColor = "rgba("+r+","+g+","+b+",0.9)"; 
+      var planetRadius = 24;
+      var offset = 18; //  //  
+      var ctx = ig.system.context;
+
+      var startX = ig.system.getDrawPos(this.pos.x - ig.game.screen.x + offset);
+      var startY = ig.system.getDrawPos(this.pos.y - ig.game.screen.y + offset);
+
+      ctx.beginPath();
+      // ctx.strokeStyle = guideColor;  //some color
+      ctx.fillStyle = planetColor;
+      ctx.arc( startX,
+              startY ,
+              planetRadius * ig.system.scale,
+              0, 
+              Math.PI * 2 );
+      
+      // ctx.stroke();
+      ctx.fill();
+
+
+      ctx.closePath();
 
 			this.parent();
 		},
@@ -177,6 +204,7 @@ ig.module(
 	}); //end of player
 	
 	EntityHighlight = ig.Entity.extend({
+    zIndex:500,
 		size: {x: 48, y: 48},
 		animSheet: new ig.AnimationSheet( 'media/planet_highlight.png', 48, 48 ),
 		//offset:{x:9,y:5},
@@ -247,6 +275,7 @@ ig.module(
 	EntityLine = ig.Entity.extend({
         start: {},
         finish: {},
+        zIndex: 400,
  
         init: function(x, y, settings) {
           this.parent(x,y,settings);

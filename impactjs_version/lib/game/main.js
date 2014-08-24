@@ -17,7 +17,7 @@ ig.module(
 	MyGame = ig.Game.extend({
 	
 		font: new ig.Font( 'media/04b03.font.png' ),
-		outputMsg: 'It works!',
+		outputMsg: 0,
 		statText: new ig.Font( 'media/04b03.font.png' ),
 		showStats: false,
 		statMatte: new ig.Image('media/stat-matte.png'),
@@ -31,7 +31,8 @@ ig.module(
               crystal: 0,
               time: 0, 
               kills: 0, 
-              deaths: 0
+              deaths: 0,
+              deathText:0
               },
 		
 		lives: 1,
@@ -95,6 +96,8 @@ ig.module(
       // this.lengthPlanetProfiles = this.allPlanetProfiles.profiles[0].name
 
       this.allPlanetProfiles = planetProfilesJSON;
+
+      this.spawnAllThePlanets();
       // jQuery.getJSON("planet-profiles.json", function(json) {
       //   console.log(json); // this will show the info it in firebug console
       // });
@@ -106,7 +109,11 @@ ig.module(
 				// screen follows the player
 			// var player = this.getEntitiesByType( EntityPlayer )[0];
 			var player = 0;
-
+      if(ig.game.highlighted == 0 && ig.game.lastHL == 0){
+        //this is the very first momnet
+        var homePlanet = ig.game.getEntitiesByType( EntityPlanet );
+        ig.game.highlighted = homePlanet[0];
+      }
 			// if(ig.game.highlighted != 0){
 			// 	player = ig.game.highlighted;
 			// }
@@ -123,6 +130,7 @@ ig.module(
 	                                  }
 	                                  ));
           this.loadProfile();
+          this.deductFuelViaDistance();
 				}
 
 				ig.game.lastHL = ig.game.highlighted ;
@@ -133,9 +141,10 @@ ig.module(
 				player = 0;
 			}
 
-			if( player != 0) {
+			if( player != 0) { //pretty much can only be 0 if game is new
 				this.screen.x = player.pos.x - ig.system.width/2;
 				this.screen.y = player.pos.y - (.50)*ig.system.height;
+        this.checkForNegativeResources();
 			}
 			
 			if(!(this.instructText == null)){if( (this.instructText == null) || this.instructText && player.accel.x > 0)
@@ -162,7 +171,7 @@ ig.module(
 			var x =ig.system.width/2;
 			var y = ig.system.height/2;
 			
-      if(this.outputMsg != 0){
+      if(this.outputMsg == 0){
         this.outputMsg='Click a planet to Connect via Telecaster!';
         // this.font.draw(this.outputMsg,x,y,ig.Font.ALIGN.CENTER );
       }
@@ -203,6 +212,7 @@ ig.module(
 		},
 		
 		gameOver: function(){
+      ig.game.stats.deathText += this.outputMsg;
 			ig.finalStats = ig.game.stats;
 			ig.system.setGame(GameOverScreen);
 		},
@@ -219,7 +229,9 @@ ig.module(
         this.outputMsg = item.text;
         this.stats.crew += item.crew;
         this.stats.hull += item.hull;
-        
+        if (item.crew < 0){
+          this.stats.deaths += -item.crew;
+        }
 
         this.stats.crystal += item.crystal;
       }
@@ -228,16 +240,70 @@ ig.module(
 
     },
 
+    deductFuelViaDistance: function(){
+      var adjFactor = 0.6;
+      var distanceX = this.highlighted.pos.x - this.lastHL.pos.x;
+      var distanceY = this.highlighted.pos.y - this.lastHL.pos.y;
 
+      var distanceH = Math.sqrt(Math.pow(distanceX,2) + Math.pow(distanceY,2)) * adjFactor; 
+
+      this.stats.fuel -= Math.floor(distanceH) ;
+    },
+
+    checkForNegativeResources: function(){ //
+      if(this.stats.fuel <= 0 ){
+        this.stats.deathText = "You ran out of fuel.\n";
+        this.gameOver();
+      }
+      if(this.stats.hull <= 0){
+        this.stats.deathText = "Your hull was destroyed.\n";
+        this.gameOver();
+      }
+      if( this.stats.crew <= 0   ){
+
+        this.stats.deathText = "Everyone on board died.\n";
+        this.gameOver();
+      }
+
+    },
+
+    spawnAllThePlanets: function(){
+      var totalPlanets = 100;
+      for (i = 0; i < totalPlanets; i++) { 
+        var allPlanets = ig.game.getEntitiesByType( EntityPlanet );
+        var mapX = ig.game.collisionMap.width * 24;
+        var mapY = ig.game.collisionMap.height * 24;
+        // console.log(mapX, mapY);
+        var maybePlanet = ig.game.spawnEntity( EntityPlanet,
+                                       40 + Math.floor(Math.random()*mapX),
+                                       40 + Math.floor(Math.random()*mapY)
+                                         );
+        // console.log(maybePlanet.pos.x , maybePlanet.pos.y); //
+
+        for(j=0;j<allPlanets.length;j++){
+          if(Math.abs(allPlanets[j].pos.x - maybePlanet.pos.x) < 40
+            & Math.abs(allPlanets[j].pos.y - maybePlanet.pos.y) < 40 ){ //
+            // console.log(allPlanets[j].pos.x ,
+            //  maybePlanet.pos.x,
+            //  allPlanets[j].pos.y ,
+            //   maybePlanet.pos.y);
+            maybePlanet.kill();
+            totalPlanets++;
+            break;
+          }
+        }//end looking for
+      }//end outer rand for
+      // console.log(totalPlanets);
+    }//end spawn func
 		
 	});
 	
 	
 	StartScreen = ig.Game.extend({
 		instructText: new ig.Font( 'media/04b03.font.png' ),
-		background: new ig.Image('media/screen-bg.png'),
-		mainCharacter: new ig.Image('media/screen-main-character.png'),
-		title: new ig.Image('media/game-title.png'),
+		background: new ig.Image('media/telecaster_screen.png'),
+		// mainCharacter: new ig.Image('media/screen-main-character.png'),
+		// title: new ig.Image('media/game-title.png'),
 		
 		init: function() {
 			ig.input.initMouse();
@@ -254,8 +320,8 @@ ig.module(
 		draw: function() {
 			this.parent();
 			this.background.draw(0,0);
-			this.mainCharacter.draw(0,0);
-			this.title.draw(ig.system.width - this.title.width, 0);
+			// this.mainCharacter.draw(0,0);
+			// this.title.draw(ig.system.width - this.title.width, 0);
 			var x = ig.system.width/2,
 			y = ig.system.height - 100;
 			this.instructText.draw( 'Click/Tap To Start', x+30, y, 
@@ -265,9 +331,10 @@ ig.module(
 	
 	GameOverScreen = ig.Game.extend({
 		instructText: new ig.Font( 'media/04b03.font.png' ),
-		background: new ig.Image('media/screen-bg.png'),
-		gameOver: new ig.Image('media/game-over.png'),
+		background: new ig.Image('media/telecaster_screen.png'),
+		gameOver: new ig.Image('media/game_over.png'),
 		stats: {},
+    outputMsg: "",
 		
 		init: function() {
 			ig.input.initMouse();
@@ -277,7 +344,7 @@ ig.module(
 		
 		update: function() {
 			if(ig.input.pressed('lbtn')){
-			ig.system.setGame(StartScreen)
+		    ig.system.setGame(StartScreen)
 			}
 			this.parent();
 		},
@@ -288,14 +355,19 @@ ig.module(
 			var x = ig.system.width/2;
 			var y = ig.system.height/2 - 20;
 			this.gameOver.draw(x - (this.gameOver.width * .5), y - 30);
-			var score = (this.stats.kills * 100) - (this.stats.deaths * 50);
-			this.instructText.draw('Total Kills: '+this.stats.kills, x, y+30, 
+			var score = (this.stats.crystal * 7) - (this.stats.deaths * 55);
+			this.instructText.draw('Total Crystals: '+this.stats.crystal, x, y+30, 
 				ig.Font.ALIGN.CENTER);
 			this.instructText.draw('Total Deaths: '+this.stats.deaths, x, y+40, 
 				ig.Font.ALIGN.CENTER);
 			this.instructText.draw('Score: '+score, x, y+50, ig.Font.ALIGN.CENTER);
 			this.instructText.draw('Click/Tap To Continue.', x, ig.system.height - 
 				100, ig.Font.ALIGN.CENTER);
+
+      this.instructText.draw(this.stats.deathText,
+          ig.system.width/2,
+          ig.system.height*(0.1),
+          ig.Font.ALIGN.CENTER );
 		}
 	});
 	
@@ -332,26 +404,96 @@ ig.module(
 
   var planetProfilesJSON = {"profiles":
     [
-      {"name":"mean",
-        "text":"Evil monsters attacked!",
-        "fuel":-30,
-        "crew":-30,
-        "hull":-30,
+      {"name":"Gas Giant",
+        "text":"You were able to harvest fuel from a gas giant, but the process was dangerous."
+        +"\nYou have lost crew members and damaged your hull.",
+        "fuel":25,
+        "crew":-5,
+        "hull":-5,
         "crystal":0
         },
-      {"name":"good",
-        "text":"Cool stuff was lying around.",
-        "fuel":10,
-        "crew":10,
-        "hull":10,
-        "crystal":10
+
+        {"name":"Native Tribe Planet",
+        "text":"Indigenous peoples beleive you a god and have gifted you sacred crystals"
+        +"\nin return for a plentiful harvest and an end to their drought.",
+        "fuel":5,
+        "crew":0,
+        "hull":0,
+        "crystal":30
         },
-      {"name":"great",
-        "text":"Super friendly and advanced aliens hook it up with goodies!",
-        "fuel":30,
-        "crew":30,
-        "hull":30,
+
+        {"name":"Friendly Planet",
+        "text":"The locals are very accomodating and some have chosen to leave their homes"
+        +"\nand join your crew to seek adventure among the stars!",
+        "fuel":10,
+        "crew":25,
+        "hull":10,
+        "crystal":0
+        },
+
+        {"name":"Utopia",
+        "text":"You have found a perfect planet, a utopia!"
+        +"\nUnfortunately, it's so perfect that your crew members have decided to stay here forever...",
+        "fuel":25,
+        "crew":-300,
+        "hull":25,
         "crystal":20
+        },
+
+        {"name":"Crystal Planet",
+        "text":"You've found a crystal planet!"
+        +"\nYour hull has been damaged while trying to gather an absurd amount of crystals."
+        +"\nHope it was worth it...",
+        "fuel":0,
+        "crew":0,
+        "hull":-50,
+        "crystal":75
+        },
+
+        {"name":"Planet o' Robbers",
+        "text":"You've been tricksed!"
+        +"\nSpace pirates have stolen your crystals and your crew has been enslaved.",
+        "fuel":0,
+        "crew":-100,
+        "hull":30,
+        "crystal":-100
+        },
+
+        {"name":"Repair Station",
+        "text":"You've found a repair station! They won't accept your strange currency..."
+        +"\nbut will settle for crystals.",
+        "fuel":30,
+        "crew":0,
+        "hull":50,
+        "crystal":-40
+        },
+
+        {"name":"Scrap Metal Planet",
+        "text":"You've found the ruins of a civilization with plenty of scrap metal"
+        +"\nto patch your ship up. Takes a bit of fuel to collect it all, though.",
+        "fuel":-30,
+        "crew":0,
+        "hull":40,
+        "crystal":0
+        },
+
+        {"name":"Because Empire!",
+        "text":"You've enslaved a technologically inferior race and stolen their wealth..."
+        +"\nand also renamed their planet after yourself."
+        +"\nNot cool, bro.",
+        "fuel":0,
+        "crew":75,
+        "hull":-5,
+        "crystal":50
+        },
+
+        {"name":"The Captain's Descent into Madness",
+        "text":"You just sold your crew into slavery because crystals were on sale."
+        +"\nA trip to the psychological evaluation center is strongly advised.",
+        "fuel":0,
+        "crew":-100,
+        "hull":0,
+        "crystal":75
         }
 
 
@@ -398,7 +540,6 @@ MyGame = ig.Game.extend({
 	
 	
 	gravity: 300,
-	
 	statText: new ig.Font( 'media/04b03.font.png' ),
 	showStats: false,
 	statMatte: new ig.Image('media/stat-matte.png'),

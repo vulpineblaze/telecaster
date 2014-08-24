@@ -7,7 +7,7 @@ ig.module(
 .defines(function(){
 EntityHud = ig.Entity.extend({
     size: {x: 320, y: 20},
-    zIndex:800,
+    zIndex:800, //
     //animSheet: new ig.AnimationSheet( 'media/hud.png', 320, 20 ),
     collides: ig.Entity.COLLIDES.NEVER,
     gravityFactor: 0,
@@ -20,6 +20,10 @@ EntityHud = ig.Entity.extend({
     update: function(){
         this.pos.x=ig.game.screen.x;
         this.pos.y=ig.game.screen.y;
+        if (ig.input.pressed('lbtn') ){
+
+            ig.game.sortEntitiesDeferred();
+        }
         if(ig.input.mouse.y<=20)
         {
             //console.log('mouse zone');

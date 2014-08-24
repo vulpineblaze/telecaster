@@ -16,19 +16,19 @@ ig.module(
   var planetProfilesJSON = {"profiles":
   	[
       {"name":"mean",
-        "fuel":-30,
+        "fuel":0,
         "crew":-30,
         "hull":-30,
         "crystal":0
         },
       {"name":"good",
-        "fuel":10,
+        "fuel":0,
         "crew":10,
         "hull":10,
         "crystal":10
         },
       {"name":"great",
-        "fuel":30,
+        "fuel":0,
         "crew":30,
         "hull":30,
         "crystal":20
