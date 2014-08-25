@@ -3,7 +3,8 @@ ig.module(
 )
 .requires(
 	'impact.entity',
-	'impact.sound'
+	'impact.sound',
+  'game.imageblender'
 )
 .defines(function(){
 	EntityPlanet = ig.Entity.extend({
@@ -31,9 +32,10 @@ ig.module(
 		regen:0.05,
 		
 		highlight:0,
-    // lines: [],
     profile: 0,
     planetColor: [25,45,65],
+    home: false,
+    timesVisited: 0,
 		
 		type: ig.Entity.TYPE.A,
 		checkAgainst: ig.Entity.TYPE.NONE,
@@ -64,29 +66,29 @@ ig.module(
 			// this.invincibleTimer = new ig.Timer();
 			
 			this.parent( x, y, settings );
-			this.addAnim( 'idle', 1, [Math.floor(1+Math.random()*2)-1 ] );
-			this.addAnim( 'run', this.animSpeed, [1,2,3,4] );
-			this.addAnim( 'jump', 1, [6] );
-			this.addAnim( 'fall', 1, [0] );
+			this.addAnim( 'idle', 1, [Math.floor(1+Math.random()*10)-1 ] );
+			// this.addAnim( 'run', this.animSpeed, [1,2,3,4] );
+			// this.addAnim( 'jump', 1, [6] );
+			// this.addAnim( 'fall', 1, [0] );
 			
-			var leftup = 42;
-			this.addAnim( 'run_leftup', this.animSpeed, [1+leftup,2+leftup,3+leftup,4+leftup] );
-			var left = 36;
-			this.addAnim( 'run_left', this.animSpeed, [1+left,2+left,3+left,4+left] );
-			var leftdown = 30;
-			this.addAnim( 'run_leftdown', this.animSpeed, [1+leftdown,2+leftdown,3+leftdown,4+leftdown] );
-			var rightup = 6;
-			this.addAnim( 'run_rightup', this.animSpeed, [1+rightup,2+rightup,3+rightup,4+rightup] );
-			var right = 12;
-			this.addAnim( 'run_right', this.animSpeed, [1+right,2+right,3+right,4+right] );
-			var rightdown = 18;
-			this.addAnim( 'run_rightdown', this.animSpeed, [1+rightdown,2+rightdown,3+rightdown,4+rightdown] );
-			var down = 24;
-			this.addAnim( 'run_down', this.animSpeed, [1+down,2+down,3+down,4+down] );
-			
-			this.planetColor = [Math.floor(20+Math.random()*230),
-        Math.floor(20+Math.random()*230),
-        Math.floor(20+Math.random()*230)
+			// var leftup = 42;
+			// this.addAnim( 'run_leftup', this.animSpeed, [1+leftup,2+leftup,3+leftup,4+leftup] );
+			// var left = 36;
+			// this.addAnim( 'run_left', this.animSpeed, [1+left,2+left,3+left,4+left] );
+			// var leftdown = 30;
+			// this.addAnim( 'run_leftdown', this.animSpeed, [1+leftdown,2+leftdown,3+leftdown,4+leftdown] );
+			// var rightup = 6;
+			// this.addAnim( 'run_rightup', this.animSpeed, [1+rightup,2+rightup,3+rightup,4+rightup] );
+			// var right = 12;
+			// this.addAnim( 'run_right', this.animSpeed, [1+right,2+right,3+right,4+right] );
+			// var rightdown = 18;
+			// this.addAnim( 'run_rightdown', this.animSpeed, [1+rightdown,2+rightdown,3+rightdown,4+rightdown] );
+			// var down = 24;
+			// this.addAnim( 'run_down', this.animSpeed, [1+down,2+down,3+down,4+down] );
+			var maxRGB = 220, minRGB=20;
+			this.planetColor = [Math.floor(minRGB+Math.random()*maxRGB),
+        Math.floor(minRGB+Math.random()*maxRGB),
+        Math.floor(minRGB+Math.random()*maxRGB)
               ];
 
 		},
@@ -138,10 +140,11 @@ ig.module(
       // console.log(r);
 			var planetColor = "rgba("+r+","+g+","+b+",0.9)"; 
       var planetRadius = 24;
-      var offset = 18; //  //  
+      var offset = 18, xOffset = 0; //  
+
       var ctx = ig.system.context;
 
-      var startX = ig.system.getDrawPos(this.pos.x - ig.game.screen.x + offset);
+      var startX = ig.system.getDrawPos(this.pos.x - ig.game.screen.x + offset+xOffset);
       var startY = ig.system.getDrawPos(this.pos.y - ig.game.screen.y + offset);
 
       ctx.beginPath();
@@ -162,6 +165,39 @@ ig.module(
 			this.parent();
 		},
 		
+    setAsHomePlanet: function(){
+      var homeHighlight = ig.game.spawnEntity( EntityHighlight, 
+                            this.pos.x, 
+                            this.pos.y, 
+                            {flip:this.flip, angle:0.0, par:this, color:"#115FFB"} 
+                            ); //Nothing to special here, just make sure you pass the angle we calculated in
+              
+      homeHighlight.zIndex=this.zIndex+2;
+      this.home = true;
+      this.timesVisited +=1;
+    },
+
+    setAsDullPlanet: function(){
+      var homeHighlight = ig.game.spawnEntity( EntityHighlight, 
+                            this.pos.x, 
+                            this.pos.y, 
+                            {flip:this.flip, angle:0.0, par:this, color:"#424242"} 
+                            ); //Nothing to special here, just make sure you pass the angle we calculated in
+              
+      homeHighlight.zIndex=this.zIndex+2;
+    },
+
+    setAsFuelPlanet: function(){
+      var homeHighlight = ig.game.spawnEntity( EntityHighlight, 
+                            this.pos.x, 
+                            this.pos.y, 
+                            {flip:this.flip, angle:0.0, par:this, color:"#19FB11"} 
+                            ); //Nothing to special here, just make sure you pass the angle we calculated in
+              
+      homeHighlight.zIndex=this.zIndex+2;
+      // this.home = true;
+      // this.timesVisited +=1;
+    }
 		
 		// kill: function(){
 		// 	//this.deathSFX.play();
@@ -205,14 +241,14 @@ ig.module(
 	
 	EntityHighlight = ig.Entity.extend({
     zIndex:500,
-		size: {x: 48, y: 48},
-		animSheet: new ig.AnimationSheet( 'media/planet_highlight.png', 48, 48 ),
+		animSheet: new ig.AnimationSheet( 'media/planet_new_highlight.png', 60, 60 ),
 		//offset:{x:9,y:5},
 		shift:{x:0,y:0},
 		
 		//maxVel: {x: 200, y: 0},
 		type: ig.Entity.TYPE.NONE,
 		angle:0,
+    color:"white",
 		//checkAgainst: ig.Entity.TYPE.B,
 		//collides: ig.Entity.COLLIDES.PASSIVE,
 		
@@ -220,8 +256,7 @@ ig.module(
 		
 		init: function( x, y, settings ) {
 		
-			var offset;
-			offset = 6; //
+			var offset = -12, xOffset = 0; 
 			// var flipsetting, velsetting;
 			// if(settings.flip){
 			// 	flipsetting = -4;
@@ -230,9 +265,18 @@ ig.module(
 			// 	flipsetting = 8;
 			// 	velsetting = this.maxVel.x;
 			// }
-			this.parent( x - offset  , y - offset, settings );
+			this.parent( x + offset +xOffset , y + offset, settings );
 			//this.vel.x = this.accel.x = velsetting;
 			this.addAnim( 'idle', 0.2, [0] );
+
+      // console.log(this.color);
+      if(this.color != "white"){
+        var sheet1 = new ig.AnimationSheet( 'media/planet_new_highlight.png'+this.color, 60, 60 );
+        this.anims.idle = new ig.Animation( sheet1, 0.2, [0] );
+    
+      }
+      this.currentAnim = this.anims.idle;
+
 		},
 		
 		handleMovementTrace: function( res ) {
@@ -242,28 +286,16 @@ ig.module(
 		
 		update: function(){
 			
-			
-			// this.pos.x = this.par.pos.x + this.shift.x;
-			// this.pos.y = this.par.pos.y + this.shift.y;
-			// //ig.log( 'tur x pos', this.pos.x,' tur par x',this.par.pos.x  );
-			
-			// var mx = (ig.input.mouse.x + ig.game.screen.x); //Figures out the x coord of the mouse in the entire world
-			// var my = (ig.input.mouse.y + ig.game.screen.y); //Figures out the y coord of the mouse in the entire world	
-			
-			// var px =this.pos.x + this.size.x/2;
-			// var py = this.pos.y + this.size.y/2;
-			
-			// var r = Math.atan2(my-py, mx-px);
-			
-			
-			// //this.currentAnim = this.anims.run;
-			// this.angle = r;
-			// r = r + Math.PI/2;
-			// this.currentAnim.angle = r;
-			
-			
+
 			this.parent();
 		},
+
+    draw: function(){
+      // var img = new ig.Image( 'media/planet_highlight.png#ff00ff' );
+      // img.draw( 100, 100 );
+
+      this.parent();
+    },
 
 		check: function( other ) {
 			//other.receiveDamage( 3, this );
@@ -293,7 +325,7 @@ ig.module(
         },
 
         draw: function() {
-          var guideColor = "rgb(196,0,245)";
+          var guideColor = "rgba(196,0,245,0.5)";
           var guideRadius = 10;
 
           var offset = 18;

@@ -36,7 +36,10 @@ EntityHud = ig.Entity.extend({
     },
     draw: function(){
         var offset = 1;
+        var ctx = ig.system.context;
 
+        ctx.fillStyle = "rgba(120,120,150,0.3)"; //
+        ctx.fillRect(0, 0, ig.system.width*3, 120);
 
         ig.game.font.draw( 
             'Crystals: '+ ig.game.stats.crystal  
@@ -48,9 +51,10 @@ EntityHud = ig.Entity.extend({
 
         ig.game.font.draw(ig.game.outputMsg,
             ig.system.width/2,
-            ig.system.height*(0.1),
+            16,
             ig.Font.ALIGN.CENTER );
 
+        
 
         this.parent();
 

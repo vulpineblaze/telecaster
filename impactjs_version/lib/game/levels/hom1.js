@@ -1,7 +1,5 @@
 ig.module( 'game.levels.hom1' )
 .requires( 'impact.image',
-	'game.entities.player',
-	'game.entities.zombie',
 	'game.entities.planet',
 	'game.entities.hud' )
 .defines(function(){

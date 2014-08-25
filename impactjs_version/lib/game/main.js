@@ -7,7 +7,6 @@ ig.module(
 	'impact.font',
 	'impact.timer',
 	'game.levels.hom1',
-  'game.planet-profiles',
 	//'game.levels.dorm1'
 	
 	'impact.debug.debug' // <- Add this
@@ -44,6 +43,7 @@ ig.module(
 		lines: [],
 
     allPlanetProfiles: {},
+    homePlanetProfiles: {},
     lengthPlanetProfiles: 0,
 
 		mapAccel:2.1,
@@ -96,6 +96,7 @@ ig.module(
       // this.lengthPlanetProfiles = this.allPlanetProfiles.profiles[0].name
 
       this.allPlanetProfiles = planetProfilesJSON;
+      this.homePlanetProfiles = homeProfilesJSON;
 
       this.spawnAllThePlanets();
       // jQuery.getJSON("planet-profiles.json", function(json) {
@@ -113,6 +114,7 @@ ig.module(
         //this is the very first momnet
         var homePlanet = ig.game.getEntitiesByType( EntityPlanet );
         ig.game.highlighted = homePlanet[0];
+        this.setHomeProfile(ig.game.highlighted);
       }
 			// if(ig.game.highlighted != 0){
 			// 	player = ig.game.highlighted;
@@ -160,7 +162,8 @@ ig.module(
 				this.screen.y += this.mapAccel;
 			}
 
-			
+			this.checkForScreenOutsideMap();
+
 			this.parent();
 			
 		},
@@ -223,20 +226,94 @@ ig.module(
       if (this.highlighted.profile == 0){
         var items = ig.game.allPlanetProfiles.profiles;
         var index = Math.floor(Math.random()*items.length);
-        console.log(index);
+        // console.log(index);
         var item = items[index];
         this.highlighted.profile = item;
         this.outputMsg = item.text;
-        this.stats.crew += item.crew;
+        // this.stats.crew += item.crew;
         this.stats.hull += item.hull;
+        this.additionalModsViaProfileName(item.name);
+
+        if(item.fuel > 10){
+          this.highlighted.setAsFuelPlanet();
+        }else{
+          this.highlighted.setAsDullPlanet();
+        }
         if (item.crew < 0){
-          this.stats.deaths += -item.crew;
+          if(this.stats.crew < -item.crew){
+            this.stats.deaths += this.stats.crew;
+            this.stats.crew = 0;
+          }else{
+            this.stats.deaths += -item.crew;
+            this.stats.crew += item.crew;
+          }
+          
+        }else{
+          this.stats.crew += item.crew;
         }
 
         this.stats.crystal += item.crystal;
+
+        
+      }//end of big if
+
+      var fuelReward=0;
+      if(this.highlighted.timesVisited > 0){
+        if(this.highlighted.home ){
+          fuelReward = this.highlighted.profile.fuel - this.highlighted.timesVisited;
+        }else{
+          fuelReward = this.highlighted.profile.fuel - this.highlighted.timesVisited*5;
+        }
+
+        if(fuelReward >= 0){
+          if(this.highlighted.home){
+            this.outputMsg = "Your homeworld showers you in praise, and fuel.";
+          }else{
+            this.outputMsg = "This world repeats in gift of fuel.";
+          }
+          this.stats.fuel += fuelReward;
+        }else{
+          if(this.highlighted.home){
+            this.outputMsg = "Your homeworld has no more fuel to spare.";
+          }else{
+            this.outputMsg = "This world cannot give any more fuel.";
+          }
+        }
+
+      }//end timesvisited > 0 if
+      
+      this.highlighted.timesVisited += 1;
+
+
+      if(this.stats.crystal < 0){
+        this.stats.crystal = 0;
+      }
+      if(this.stats.crew < 0){
+        this.stats.crew = 0;
+      }
+      if(this.stats.fuel < 0){
+        this.stats.fuel = 0;
       }
 
-        this.stats.fuel += this.highlighted.profile.fuel;
+    },
+
+    setHomeProfile: function(homePlanet){
+      var items = ig.game.homePlanetProfiles.profiles;
+      var index = Math.floor(Math.random()*items.length);
+      // console.log(index);
+      var item = items[index];
+      homePlanet.profile = item;
+      this.outputMsg = item.text;
+      // this.stats.crew += item.crew;
+      this.stats.hull += item.hull;
+      this.additionalModsViaProfileName(item.name);
+
+      this.stats.crew += item.crew;
+      this.stats.hull += item.hull;
+      this.stats.fuel += item.fuel;
+      this.stats.crystal += item.crystal;
+
+      homePlanet.setAsHomePlanet();
 
     },
 
@@ -261,7 +338,7 @@ ig.module(
       }
       if( this.stats.crew <= 0   ){
 
-        this.stats.deathText = "Everyone on board died.\n";
+        this.stats.deathText = "The ship no longer has a crew.\n";
         this.gameOver();
       }
 
@@ -294,9 +371,50 @@ ig.module(
         }//end looking for
       }//end outer rand for
       // console.log(totalPlanets);
-    }//end spawn func
+    },//end spawn func
+
+    additionalModsViaProfileName: function(name){
+      if(name == "Gas Giant"){
+        this.stats.fuel += this.randomNumGen(1,20);
+        this.stats.crew -= this.randomNumGen(1,5);
+        this.stats.hull -= this.randomNumGen(1,5);
+      }
+
+    },
+
+    randomNumGen: function(smallest,largest){
+      return (smallest + Math.floor(Math.random()*largest-smallest+1));
+    },
+
+    checkForScreenOutsideMap: function(){
+      //ig.system.width , height
+      //ig.game.collisionMap.width, height
+      //this.screen.x,y
+      var mapX = ig.game.collisionMap.width * 24;
+      var mapY = ig.game.collisionMap.height * 24;
+
+      // console.log(this.screen.x,
+      //             this.screen.y,
+      //             mapX,
+      //             mapY,
+      //             ig.system.width,
+      //             ig.system.height);
+
+      if(this.screen.x + ig.system.width > mapX){
+        this.screen.x = mapX - ig.system.width;
+      }else if(this.screen.x < 0){
+        this.screen.x = 0;
+      }
+
+      if(this.screen.y + ig.system.height > mapY){
+        this.screen.y = mapY - ig.system.height;
+      }else if(this.screen.y < 0){
+        this.screen.y = 0;
+      }
+
+    } //end cehck for screen bounds func
 		
-	});
+	}); //end game enitity thing
 	
 	
 	StartScreen = ig.Game.extend({
@@ -350,15 +468,17 @@ ig.module(
 		},
 		
 		draw: function() {
+      var crystalScore = 55;
+      var crewScore = 91;
 			this.parent();
 			this.background.draw(0,0);
 			var x = ig.system.width/2;
 			var y = ig.system.height/2 - 20;
 			this.gameOver.draw(x - (this.gameOver.width * .5), y - 30);
-			var score = (this.stats.crystal * 7) - (this.stats.deaths * 55);
-			this.instructText.draw('Total Crystals: '+this.stats.crystal, x, y+30, 
+			var score = (this.stats.crystal * crystalScore) - (this.stats.deaths * crewScore);
+			this.instructText.draw('Total Crystals Acquired: '+this.stats.crystal, x, y+30, 
 				ig.Font.ALIGN.CENTER);
-			this.instructText.draw('Total Deaths: '+this.stats.deaths, x, y+40, 
+			this.instructText.draw('Total Crew Lost: '+this.stats.deaths, x, y+40, 
 				ig.Font.ALIGN.CENTER);
 			this.instructText.draw('Score: '+score, x, y+50, ig.Font.ALIGN.CENTER);
 			this.instructText.draw('Click/Tap To Continue.', x, ig.system.height - 
@@ -382,11 +502,11 @@ ig.module(
 	if( ig.ua.mobile ) {
 		// Disable sound for all mobile devices
 		ig.Sound.enabled = false;
-		game_x =312;
-		game_y =468;
-		game_z =4;
+		game_x =322;
+		game_y =368; // 
+		game_z =3;
 	}else{
-		game_x =400; //
+		game_x =400; 
 		game_y =320;
 		game_z =2;
 	}
@@ -402,6 +522,38 @@ ig.module(
 	//ig.main('#canvas',MyGame,60,1248,1872,0.5);
 
 
+  var homeProfilesJSON = {"profiles":
+    [
+      {"name":"War Planet",
+        "text":"Your planet is war planet"
+        +"\n ",
+        "fuel":25,
+        "crew":15,
+        "hull":95,
+        "crystal":0
+      },
+
+      {"name":"Science Planet",
+        "text":"Your planet is science planet"
+        +"\n ",
+        "fuel":115,
+        "crew":5,
+        "hull":5,
+        "crystal":10
+      },
+
+      {"name":"Overpopulated Planet",
+        "text":"Your planet is overpop planet"
+        +"\n ",
+        "fuel":5,
+        "crew":90,
+        "hull":10,
+        "crystal":0
+      }
+    ]
+  }; //end of home profile json
+
+
   var planetProfilesJSON = {"profiles":
     [
       {"name":"Gas Giant",
@@ -414,7 +566,7 @@ ig.module(
         },
 
         {"name":"Native Tribe Planet",
-        "text":"Indigenous peoples beleive you a god and have gifted you sacred crystals"
+        "text":"Indigenous peoples believe you a god and have gifted you sacred crystals"
         +"\nin return for a plentiful harvest and an end to their drought.",
         "fuel":5,
         "crew":0,
@@ -423,7 +575,7 @@ ig.module(
         },
 
         {"name":"Friendly Planet",
-        "text":"The locals are very accomodating and some have chosen to leave their homes"
+        "text":"The locals are very accommodating and some have chosen to leave their homes"
         +"\nand join your crew to seek adventure among the stars!",
         "fuel":10,
         "crew":25,
@@ -433,7 +585,8 @@ ig.module(
 
         {"name":"Utopia",
         "text":"You have found a perfect planet, a utopia!"
-        +"\nUnfortunately, it's so perfect that your crew members have decided to stay here forever...",
+        +"\nUnfortunately... "
+        +"\nIt's so perfect that your crew members have decided to stay here forever...",
         "fuel":25,
         "crew":-300,
         "hull":25,
@@ -491,9 +644,100 @@ ig.module(
         "text":"You just sold your crew into slavery because crystals were on sale."
         +"\nA trip to the psychological evaluation center is strongly advised.",
         "fuel":0,
-        "crew":-100,
+        "crew":-300,
         "hull":0,
-        "crystal":75
+        "crystal":157
+        },
+
+        {"name":"Average Planet",
+        "text":"The natives offer you tokens of goodwill in exchange for"
+        +"\nallowing them to live. How generous.",
+        "fuel":20,
+        "crew":0,
+        "hull":20,
+        "crystal":10
+        },
+
+         {"name":"Spider Planet",
+        "text":"The arachnoid species inhabiting the planet offer you their silk"
+        +"\nto repair and strengthen your hull with. The silk is stronger than any metal"
+        +"\nyou currently have on board.",
+        "fuel":0,
+        "crew":0,
+        "hull":30,
+        "crystal":0
+        },
+
+         {"name":"Cow-Town",
+        "text":"An agricultural community offers you manure from their livestock"
+        +"\nto use as fuel and requests you immediately leave.",
+        "fuel":30,
+        "crew":0,
+        "hull":0,
+        "crystal":0
+        },
+
+         {"name":"Clones",
+        "text":"The cloning technology on this planet allows you to supplement your crew"
+        +"\nwith genetically superior specimens.",
+        "fuel":0,
+        "crew":50,
+        "hull":0,
+        "crystal":-10
+        },
+
+         {"name":"Junkyard Planet I",
+        "text":"Plenty of scrap metal can be found on this junkyard planet to"
+        +"\nrepair and strengthen your hull.",
+        "fuel":0,
+        "crew":0,
+        "hull":30,
+        "crystal":-5
+        },
+
+         {"name":"Junkyard Planet II",
+        "text":"Both fuel and scrap metal can be found on this junkyard planet"
+        +"\nand they can be yours...for a price...",
+        "fuel":20,
+        "crew":0,
+        "hull":30,
+        "crystal":-15
+        },
+
+         {"name":"Pompeii",
+        "text":"You inadvertently save a village from imminent death and"
+        +"\nthey decide to join your crew out of gratitude.",
+        "fuel":0,
+        "crew":35,
+        "hull":0,
+        "crystal":5
+        },
+
+         {"name":"Fuel Crystal Planet",
+        "text":"You find an uncommon form of crystal that can double as fuel!"
+        +"\nUnfortunately, some of your crew members were careless and died collecting them.",
+        "fuel":25,
+        "crew":-10,
+        "hull":0,
+        "crystal":25
+        },
+
+         {"name":"Repairs Planet",
+        "text":"An amiable race repairs and strengthens your hull in exchange for crystals."
+        +"\nThey advise you to stay away from green planets, but do not give you a reason.",
+        "fuel":0,
+        "crew":0,
+        "hull":30,
+        "crystal":-15
+        },
+
+         {"name":"Mining Planet",
+        "text":"You strip-mine a seemingly empty planet."
+        +"\nYou find fuel, crystals, and ancient ruins.",
+        "fuel":35,
+        "crew":0,
+        "hull":0,
+        "crystal":20
         }
 
 
