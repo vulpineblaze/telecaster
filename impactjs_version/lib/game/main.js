@@ -42,6 +42,9 @@ ig.module(
 		lastHL:0,
 		lines: [],
 
+    map: [],
+    mapSize: 64,
+
     allPlanetProfiles: {},
     homePlanetProfiles: {},
     lengthPlanetProfiles: 0,
@@ -51,6 +54,9 @@ ig.module(
 		init: function() {
 		// Initialize your game here; bind keys etc.
 			//this.loadLevel( LevelDorm1 );
+      // console.log(LevelHom1.layer[0].name);
+
+      this.randomizeMap(LevelHom1.layer[0].data);
 			this.loadLevel( LevelHom1 );
 
       this.stats.fuel = 300;
@@ -201,7 +207,39 @@ ig.module(
 			
 		},
 		
-		
+
+		randomizeMap: function(mapArray){
+      // var tiles = new ig.Image( 'media/planet_tileset.png' );
+      // // this.collisionMap = new ig.CollisionMap( this.mapSize, this.map );
+      // //   var bgmap = new ig.BackgroundMap( this.mapSize, this.map, this.tiles );
+
+      // //   this.backgroundMaps.push( bgmap );
+      // for(var i=0;i<this.mapSize;i++){
+      //   this.map[i] = this.getRow();
+      // }
+
+      // var bgmap = new ig.BackgroundMap( this.mapSize, this.map, tiles );
+
+      // this.backgroundMaps.push( bgmap );
+
+      for(var y=0;y<mapArray.length;y++){
+        for(var x=0;x<mapArray[0].length;x++){
+          mapArray[y][x] = this.randomNumGen(0,25); //should be 23, pad w black?
+        }
+      }
+
+    },
+
+    // getRow: function() {
+    //     var row = [];
+    //     for( var x = 0; x < this.mapSize; x++ ) {
+    //         // row[x] = Math.random() > 0.93 ? 1 : 0;
+
+    //         row[x] = this.randomNumGen(0,3);
+    //     }
+    //     return row;
+    // },
+
 		loadLevel: function( data ) {
 			this.stats = {time: 0, kills: 0, deaths: 0};
 			this.parent(data);
@@ -318,7 +356,7 @@ ig.module(
     },
 
     deductFuelViaDistance: function(){
-      var adjFactor = 0.6;
+      var adjFactor = 0.1; 
       var distanceX = this.highlighted.pos.x - this.lastHL.pos.x;
       var distanceY = this.highlighted.pos.y - this.lastHL.pos.y;
 
@@ -524,32 +562,38 @@ ig.module(
 
   var homeProfilesJSON = {"profiles":
     [
-      {"name":"War Planet",
-        "text":"Your planet is war planet"
-        +"\n ",
-        "fuel":25,
-        "crew":15,
-        "hull":95,
-        "crystal":0
-      },
+      {"name":"Science Home Planet",
+        "text":"As a scientist, your job is to explore and record your findings as you"
+        +"\n travel the galaxy. Your observations will help shape your planet's perception"
+        +"\nof the universe, and ultimately shape history."
+        +"\nClick to activate the telecaster and explore your first planet!",
+        "fuel":40,
+        "crew":0,
+        "hull":0,
+        "crystal":20
+        },
 
-      {"name":"Science Planet",
-        "text":"Your planet is science planet"
-        +"\n ",
-        "fuel":115,
-        "crew":5,
-        "hull":5,
-        "crystal":10
-      },
-
-      {"name":"Overpopulated Planet",
-        "text":"Your planet is overpop planet"
-        +"\n ",
-        "fuel":5,
-        "crew":90,
-        "hull":10,
+         {"name":"Warrior Home Planet",
+        "text":"You come from a long line of military generals and bloodthirsty warriors."
+        +"\nYou plan on making your people proud as you conquer the galaxy,"
+        +"\none planet at a time."
+        +"\nFire the telecaster to conquer your first planet and claim it for your people!",
+        "fuel":30,
+        "crew":0,
+        "hull":40,
         "crystal":0
-      }
+        },
+
+         {"name":"Overpopulated Home Planet",
+        "text":"Your species is numerous and your home planet crowded. As a desperate measure,"
+        +"\nyou have been sent forth to explore and colonize other planets and search for"
+        +"\nlife-sustaining resources."
+        +"\nClick to transport your colonists to your first planet via telecaster! ",
+        "fuel":30,
+        "crew":40,
+        "hull":0,
+        "crystal":0
+        }
     ]
   }; //end of home profile json
 
@@ -738,6 +782,112 @@ ig.module(
         "crew":0,
         "hull":0,
         "crystal":20
+        },
+
+        {"name":"Slightly Unethical Practices",
+        "text":"Natives have graciously offered to help make you fuel..."
+        +"\n...but refuse to reveal how, exactly, they'll do so. "
+        +"\nAlso, it seems some crew members have gone missing..."
+        +"\nbut I'm sure that's unrelated.",
+        "fuel":30,
+        "crew":-10,
+        "hull":0,
+        "crystal":0
+        },
+
+         {"name":"Corrosive Planet",
+        "text":"You've found a crystal planet with a highly corrosive atmosphere."
+        +"\nYou attempt to mine the crystals, but a major accident occurs"
+        +"\nand as a result you've sustained significant casualties.",
+        "fuel":0,
+        "crew":-40,
+        "hull":0,
+        "crystal":50
+        },
+
+         {"name":"Ship Cemetery",
+        "text":"The surface of this planet is littered with the wreckage of millions of"
+        +"\nodd-looking spaceships. They appear to possess technology far beyond any you've"
+        +"\never seen. You take what scraps you can to strengthen your hull.",
+        "fuel":0,
+        "crew":0,
+        "hull":30,
+        "crystal":0
+        },
+
+         {"name":"Fuel Station",
+        "text":"You find an abandoned fuel station still containing some usable fuel."
+        +"\nYou notice, however, that the owners of the station are still present."
+        +"\nWell. Their remains are, anyway.",
+        "fuel":40,
+        "crew":0,
+        "hull":0,
+        "crystal":0
+        },
+
+         {"name":"Radioactive Planet",
+        "text":"You find a planet with a radioactive surface and you decide to collect samples"
+        +"\nTo use as fuel. However, you lose some crew members and damage your ship"
+        +"\nin the process.",
+        "fuel":30,
+        "crew":-10,
+        "hull":-5,
+        "crystal":0
+        },
+
+         {"name":"Monster Planet I",
+        "text":"You encounter a hostile race and take some damage from the attack."
+        +"\nHowever, you're able to retreat, taking with you some of their wealth.",
+        "fuel":10,
+        "crew":-10,
+        "hull":-10,
+        "crystal":10
+        },
+
+         {"name":"Monster Planet II",
+        "text":"You encounter a hostile race, but you are able to successfully subdue them,"
+        +"\ntaking their resources and their people as your own.",
+        "fuel":30,
+        "crew":15,
+        "hull":-10,
+        "crystal":15
+        },
+
+         {"name":"Monster Planet III",
+        "text":"You encounter a hostile race and upon engaging them, take heavy losses."
+        +"\nYou barely escape with your own life, defeated and disgraced.",
+        "fuel":0,
+        "crew":-25,
+        "hull":-20,
+        "crystal":0
+        },
+
+         {"name":"Octopi Planet",
+        "text":"You encounter a highly intelligent cephalopoid race."
+        +"\nThey are happy to help you refuel and request you bring them"
+        +"\nmalachite samples.",
+        "fuel":35,
+        "crew":0,
+        "hull":0,
+        "crystal":0
+        },
+
+         {"name":"Healer Planet",
+        "text":"This planet is inhabited by shaman-like healers, some of which join"
+        +"\nyour crew. They give you crystals as a token of goodwill.",
+        "fuel":0,
+        "crew":5,
+        "hull":0,
+        "crystal":40
+        },
+
+         {"name":"Unfriendly Planet",
+        "text":"You are not authorized to land on this planet."
+        +"\nYou have been given fuel, but you must leave immediately.",
+        "fuel":30,
+        "crew":0,
+        "hull":0,
+        "crystal":0
         }
 
 

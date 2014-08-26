@@ -9,7 +9,7 @@ LevelHom1=/*JSON[*/{
 				{"type":"EntityHud","x":5,"y":5}
 				],
 	"layer":[{"name":"tiles","width":20,"height":40,"linkWithCollision":false,"visible":1,
-	"tilesetName":"media/planet_tileset.png","repeat":false,"preRender":false,"distance":"1",
+	"tilesetName":"media/star_tileset.png","repeat":false,"preRender":false,"distance":"1",
 	"tilesize":24,"foreground":false,
 	"data":[
 	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
