@@ -15,9 +15,7 @@
 
 ## General info
 * Telecaster was created for the [Ludum Dare Game Competition (LD#30)](https://ldjam.com/about)
-* Travel through space via telecaster.
-* Maintain four resources: crystals, fuel, crew, and hull.
-* Enjoy the story and random events; see how long your colony can last in space.
+* It is a click to move in browser game, where you travel from planet to planet via telecaster.  The goal of the game is to not run out of fuel, crew, or hull points, while earning crystal points.  Enjoy the story and random events, and see how long your people can last out in space.
 
 ## Screenshots
 ![screenshot](https://github.com/vulpineblaze/telecaster/blob/master/art_assets/screenshotLD30.PNG)
