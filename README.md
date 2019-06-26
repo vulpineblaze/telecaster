@@ -1,5 +1,5 @@
-# Project Name
-> Here goes your awesome project description!
+# Telecaster
+> An in browser board game where you move from planet to planet while trying to maintain your crystals, fuel, crew, and hull.
 
 ## Table of contents
 * [General info](#general-info)
@@ -14,48 +14,36 @@
 * [Contact](#contact)
 
 ## General info
-Add more general information about project. What the purpose of the project is? Motivation?
-Put possible docs / coda link here.
+* Telecaster was created for the [Ludum Dare Game Competition (LD#30)](https://ldjam.com/about)
+* Travel through space via telecaster.
+* Maintain four resources: crystals, fuel, crew, and hull.
+* Enjoy the story and random events; see how long your colony can last in space.
 
 ## Screenshots
-![Example screenshot](./img/screenshot.png)
+![screenshot](https://github.com/vulpineblaze/telecaster/blob/master/art_assets/screenshotLD30.PNG)
 
 ## Technologies
-* Tech 1 - version 1.0
-* Tech 2 - version 2.0
-* Tech 3 - version 3.0
+* impactJS
 
 ## Setup
-Describe how to install / setup your local environement / add link to demo version.
+http://fusionbombsderp.com/telecaster/
 
 ### Requirements
-If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+* impactJS
 
 ### Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Code Examples
-Show examples of usage:
-`put-your-code-here`
+Load via browser and play per instructions!
 
 ## Features
-List of features ready and TODOs for future development
-* Awesome feature 1
-* Awesome feature 2
-* Awesome feature 3
-
-To-do list:
-* Wow improvement to be done 1
-* Wow improvement to be done 2
+* Click a planet to transport there.
+* Gather crystals for points.
+* Game is over if you run out of fuel, crew, or hull points.
 
 ## Status
-Project is: _in progress_, _finished_, _no longer continue_ and why?
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Project is: _finished_
 
 ## Inspiration
-Add here credits. Project inspired by..., based on...
+This game was inspired by the prompt, my interest in space, and Star Trek.
 
 ## Contact
 Created by [@vulpineblaze](https://github.com/vulpineblaze) - feel free to contact me!
