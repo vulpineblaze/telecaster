@@ -21,13 +21,13 @@
 ![screenshot](https://github.com/vulpineblaze/telecaster/blob/master/art_assets/screenshotLD30.PNG)
 
 ## Technologies
-* impactJS
+* ImpactJS
 
 ## Setup
 http://fusionbombsderp.com/telecaster/
 
 ### Requirements
-* impactJS
+* ImpactJS
 
 ### Usage
 Load via browser and play per instructions!
